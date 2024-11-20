@@ -1,15 +1,28 @@
 package champollion;
 
+import java.util.ArrayList;
+
+import lombok.Getter;
+
 /**
  * Un enseignant est caractérisé par les informations suivantes : son nom, son adresse email, et son service prévu,
  * et son emploi du temps.
  */
 public class Enseignant extends Personne {
 
+    @Getter
+    private ArrayList<ServicePrevu> servicesPrevus;
+
+    @Getter
+    private ArrayList<Intervention> interventions;
+
+
     // TODO : rajouter les autres méthodes présentes dans le diagramme UML
 
     public Enseignant(String nom, String email) {
         super(nom, email);
+        servicesPrevus = new ArrayList<ServicePrevu>();
+        interventions = new ArrayList<Intervention>();
     }
 
     /**
@@ -21,8 +34,12 @@ public class Enseignant extends Personne {
      *
      */
     public int heuresPrevues() {
-        // TODO: Implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+
+        int hPrevues=0;
+        for(ServicePrevu s : servicesPrevus){
+            hPrevues+= s.getVolumeCM() + s.getVolumeTD() + s.getVolumeTP();
+        }
+        return hPrevues;
     }
 
     /**
@@ -34,9 +51,21 @@ public class Enseignant extends Personne {
      * @return le nombre total d'heures "équivalent TD" prévues pour cet enseignant, arrondi à l'entier le plus proche
      *
      */
-    public int heuresPrevuesPourUE(UE ue) {
-        // TODO: Implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+    public int heuresPrevuesPourUE(UE ue)/* throws IllegalArgumentException*/ {
+        
+        boolean verifExistenceUE=false;
+        int hPrevuesUE=0;
+        for(ServicePrevu s : servicesPrevus){
+            if (s.getUniteEnseignement().equals(ue)){
+                hPrevuesUE += s.getVolumeCM() + s.getVolumeTD() + s.getVolumeTP();
+                verifExistenceUE=true;
+            }
+        }
+
+        if (!verifExistenceUE) {
+            throw new IllegalArgumentException("UE non enseigné par cet enseignant");
+        }
+        return hPrevuesUE;
     }
 
     /**
@@ -48,8 +77,18 @@ public class Enseignant extends Personne {
      * @param volumeTP le volume d'heures de TP
      */
     public void ajouteEnseignement(UE ue, int volumeCM, int volumeTD, int volumeTP) {
-        // TODO: Implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+
+        //Ajouter un servicePrevu à la liste "servicesPrevus", avec les valeurs des attributs spécifiés en paramètres
+        servicesPrevus.add(new ServicePrevu(ue, volumeCM, volumeTD, volumeTP));
     }
 
+    public void ajouteIntervention(UE uniteEnseignement, TypeIntervention type_Intervention, int duree) throws IllegalStateException{
+        
+        if (duree <= this.heuresPrevuesPourUE(uniteEnseignement)){
+            this.interventions.add(new Intervention(uniteEnseignement, type_Intervention, duree));
+        }
+        else 
+            throw new IllegalArgumentException("Ajout ne peut pas aboutir");
+
+    }
 }

@@ -84,11 +84,59 @@ public class Enseignant extends Personne {
 
     public void ajouteIntervention(UE uniteEnseignement, TypeIntervention type_Intervention, int duree) throws IllegalStateException{
         
-        if (duree <= this.heuresPrevuesPourUE(uniteEnseignement)){
+        int nbHeuresInterventionsPrevues= 0;
+        for(Intervention i : interventions){
+            if ((i.getType_Intervention().equals(type_Intervention)) && (i.getUniteEnseignement().equals(uniteEnseignement))) {
+                nbHeuresInterventionsPrevues += i.getDuree();
+            }
+        }
+        int hPrevuesUETI=0;
+        for(ServicePrevu s : servicesPrevus){
+            if (s.getUniteEnseignement().equals(uniteEnseignement)){
+                if (type_Intervention.equals(TypeIntervention.CM))
+                    hPrevuesUETI += s.getVolumeCM();
+                else if(type_Intervention.equals(TypeIntervention.TD))
+                    hPrevuesUETI += s.getVolumeTD();
+                else if(type_Intervention.equals(TypeIntervention.TP))
+                    hPrevuesUETI += s.getVolumeTP();
+            }
+        }
+
+        if (duree+nbHeuresInterventionsPrevues <= hPrevuesUETI) {
             this.interventions.add(new Intervention(uniteEnseignement, type_Intervention, duree));
         }
         else 
-            throw new IllegalArgumentException("Ajout ne peut pas aboutir");
+            throw new IllegalStateException("Ajout ne peut pas aboutir");
+    }
 
+    public int resteAPlanifier(UE uniteEnseignement, TypeIntervention type_Intervention){
+        int nbHeuresInterventionsPrevues= 0;
+        for(Intervention i : interventions){
+            if ((i.getType_Intervention().equals(type_Intervention)) && (i.getUniteEnseignement().equals(uniteEnseignement))) {
+                nbHeuresInterventionsPrevues += i.getDuree();
+            }
+        }
+        int hPrevuesUETI=0;
+        for(ServicePrevu s : servicesPrevus){
+            if (s.getUniteEnseignement().equals(uniteEnseignement)){
+                if (type_Intervention.equals(TypeIntervention.CM))
+                    hPrevuesUETI += s.getVolumeCM();
+                else if(type_Intervention.equals(TypeIntervention.TD))
+                    hPrevuesUETI += s.getVolumeTD();
+                else if(type_Intervention.equals(TypeIntervention.TP))
+                    hPrevuesUETI += s.getVolumeTP();
+            }
+        }
+        return hPrevuesUETI-nbHeuresInterventionsPrevues;
+    }
+
+    public boolean enSousService(UE ue){
+        int HeuresPrevues = this.heuresPrevuesPourUE(ue);
+        boolean testEnSousService = false;
+
+        if (HeuresPrevues < 192) {
+            testEnSousService = true;
+        }
+        return testEnSousService;
     }
 }
